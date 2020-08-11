@@ -94,7 +94,6 @@ m3u8c_main() {
     fi
 
     # process
-    cd "$(dirname $0)"
     if [ "${is_force}" == "true" ]; then
         rm -rf "${TEMP_DIR_NAME}"
     fi
