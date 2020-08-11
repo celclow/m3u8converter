@@ -14,7 +14,7 @@ m3u8c_show_usage() {
 }
 
 m3u8c_urllisting() {
-    cmds=$(cat "${m3u8_path}" | tr -d '\r' | tr -d '\n' | tr '#' ' ')
+    cmds=$(cat "${M3U8_FILE_NAME}" | tr -d '\r' | tr -d '\n' | tr '#' ' ')
     for cmd in ${cmds}; do
         if [[ ${cmd} =~ ^EXTINF:.* ]]; then
             file=$(echo "${cmd}" | cut -d ',' -f 2)
@@ -28,9 +28,9 @@ m3u8c_urllisting() {
 
 m3u8c_download() {
     wget \
-        --input-file="${TEMP_DIR_NAME}/${LIST_FILE_NAME}" \
+        --input-file="${LIST_FILE_NAME}" \
         --no-verbose \
-        --append-output="${TEMP_DIR_NAME}/${WGET_LOG_NAME}" \
+        --append-output="${WGET_LOG_NAME}" \
         --directory-prefix="${TEMP_DIR_NAME}" \
         --tries=30 \
         --retry-connrefused \
@@ -42,14 +42,13 @@ m3u8c_convert() {
     ffmpeg \
         -protocol_whitelist file,http,https,tcp,tls,crypto \
         -allowed_extensions ALL \
-        -i "${TEMP_DIR_NAME}/${M3U8_FILE_NAME}" \
-        -vstats_file MFRfile.txt \
+        -i "${M3U8_FILE_NAME}" \
         -movflags faststart \
         -c copy \
         -bsf:a aac_adtstoasc \
-        "${TEMP_DIR_NAME}/${OUT_VID_NAME}" \
-        1>"${TEMP_DIR_NAME}/${FFMPEG_LOG_NAME}" \
-        2>"${TEMP_DIR_NAME}/${FFMPEG_ERR_LOG_NAME}"
+        "${OUT_VID_NAME}" \
+        1>"${FFMPEG_LOG_NAME}" \
+        2>"${FFMPEG_ERR_LOG_NAME}"
 }
 
 m3u8c_main() {
@@ -63,7 +62,7 @@ m3u8c_main() {
             base_url=$OPTARG
             ;;
         d) # drm file
-            drm_file=$OPTARG
+            drm_path=$OPTARG
             ;;
         f) # force
             is_force=true
@@ -108,10 +107,11 @@ m3u8c_main() {
         cp "${drm_path}" "${TEMP_DIR_NAME}"
     fi
 
+    cd "${TEMP_DIR_NAME}"
     # listing
     if [ -z "${manual}" ] || [ "${manual}" == "listing" ]; then
-        m3u8c_urllisting "${m3u8_path}" "${base_url}" >"${TEMP_DIR_NAME}/${LIST_FILE_NAME}"
-        if [ ! -s "${TEMP_DIR_NAME}/${LIST_FILE_NAME}" ]; then
+        m3u8c_urllisting >"${LIST_FILE_NAME}"
+        if [ ! -s "${LIST_FILE_NAME}" ]; then
             echo "urllisting failed." && exit 1
         fi
     fi
