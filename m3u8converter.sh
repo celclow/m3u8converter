@@ -31,7 +31,6 @@ m3u8c_download() {
         --input-file="${LIST_FILE_NAME}" \
         --no-verbose \
         --append-output="${WGET_LOG_NAME}" \
-        --directory-prefix="${TEMP_DIR_NAME}" \
         --tries=30 \
         --retry-connrefused \
         --waitretry=10 \
